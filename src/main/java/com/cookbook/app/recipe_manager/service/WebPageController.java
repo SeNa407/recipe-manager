@@ -1,0 +1,71 @@
+package com.cookbook.app.recipe_manager.service;
+
+
+import com.cookbook.app.recipe_manager.repositories.RecipeRepository;
+import com.cookbook.app.recipe_manager.models.Modifications;
+import com.cookbook.app.recipe_manager.models.Recipe;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/cookmanager")
+public class WebPageController {
+
+    private final String uri = "https://www.gutekueche.at/kirschkuchen-rezept-9938";
+    //private final String uri =  "https://www.chefkoch.de/rezepte/4307951716383426/Baiser-Stachelbeersahne-Kuchen.html";
+
+
+    private WebPageService webPageService;
+    private ScraperService scraperService;
+    private RecipeRepository recipeRepository;
+
+    @Autowired
+    public WebPageController(WebPageService webPageService, ScraperService scraperService, RecipeRepository recipeRepository) {
+        this.webPageService = webPageService;
+        this.scraperService = scraperService;
+        this.recipeRepository = recipeRepository;
+    }
+
+
+    @GetMapping("/getPage")
+    public String showPage(String url) {
+        String htmlContent = webPageService.getPage(uri);
+        return htmlContent;
+    }
+
+    @GetMapping("/import")     //PostMapping
+    public String importRecipe() {
+
+        try {
+            Recipe recipe = scraperService.scrapeRecipeFromUrl(uri);
+            return recipe.toJson();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    @PostMapping("/importNewRecipe")
+    public ResponseEntity<?> importNewRecipe(@RequestParam String url) {
+        try {
+            Recipe recipe = scraperService.scrapeRecipeFromUrl(url);
+            Modifications initialMod = new Modifications();
+            initialMod.setRecipe(recipe);
+            recipe.setMyModification(initialMod);
+
+            Recipe savedRecipe = (Recipe) recipeRepository.save(recipe);
+            // 4. Return HTTP 201 Created along with the fresh saved database record
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedRecipe);
+        } catch (IllegalArgumentException e) {
+            // Catches unsupported websites or missing metadata structures
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        catch (Exception e) {
+
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+}
