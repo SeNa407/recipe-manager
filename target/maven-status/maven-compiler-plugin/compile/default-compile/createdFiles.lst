@@ -1,9 +1,0 @@
-com\cookbook\app\recipe_manager\repositories\RecipeRepository.class
-com\cookbook\app\recipe_manager\service\ScraperService.class
-com\cookbook\app\recipe_manager\service\WebPageService.class
-com\cookbook\app\recipe_manager\models\Modifications.class
-com\cookbook\app\recipe_manager\service\RecipeService.class
-com\cookbook\app\recipe_manager\config\WebClientConfiguration.class
-com\cookbook\app\recipe_manager\models\Recipe.class
-com\cookbook\app\recipe_manager\RecipeManagerApplication.class
-com\cookbook\app\recipe_manager\service\WebPageController.class
